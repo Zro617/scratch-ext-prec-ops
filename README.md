@@ -2,10 +2,12 @@
 Enhanced-Precision Operators Extension for Scratch
 
 The EPO extension shall be used only for enhancing the use of the Scratch online player.
-If you have Flash installed, you may use the Scratch player in any web browser. To use
+If you have Flash installed, you may use the Scratch player in any web browser. To install
 this extension, add a bookmark to your browser with the following link:  
 
-`javascript:(function%20(){var%20epo%20=%20document.createElement('script');s.setAttribute('src',%20'https://github.com/Zro617/scratch-ext-prec-ops.git');document.body.appendChild(epo);})();`
+`javascript:(function(){var%20epo=document.createElement('script');s.setAttribute('src','https://github.com/Zro617/scratch-ext-prec-ops.git');document.body.appendChild(epo);})();`
+
+When you want to use it, click the bookmark when on any Scratch project webpage.  
 
 I apologize if you are unable to install the extension as a result of future updates to
 the Scratch online player.  
@@ -18,10 +20,10 @@ STACKS:
   
 BOOLEANS:
   * installed?
-  * [] is [positive/negative/zero v]?
-  * [] is [integer/decimal/NaN/infinity v]?
+  * [] is [positive/negative/zero]?
+  * [] is [integer/decimal/NaN/infinity]?
   
-OPERATORS:
+ENHANCED OPERATORS:
   * precision
   * pi
   * [] + []
