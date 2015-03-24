@@ -1,6 +1,6 @@
 /* @name          EnhancedPrecisionOperators
  * @author        Zach R
- * @version       1.0.0
+ * @version       1.0.5
  * @lastCommit    March 24, 2015
  *
  *
@@ -45,6 +45,8 @@
  *  + do_mod     = take two large numbers and do the modulo function
  *  + do_fact    = take one integer and do factorial multiplication
  *  + do_sqrt    = take one large number and do Babylonian method until desired result
+ *  + do_abs     = take one large number and return the absolute value
+ *  + do_round   = take one large number and remove all decimal places
  *
  *  + count_int  = take one number and count its integer places
  *  + count_dec  = take one number and count its decimal places
@@ -79,6 +81,8 @@
             ['r', '%s mod %s', 'do_mod', '', ''],
             ['r', '%s !', 'do_fact', ''],
             ['r', 'sqrt of %s', 'do_sqrt', ''],
+            ['r', 'abs of %s', 'do_abs', ''],
+            ['r', 'round %s', 'do_round', ''],
             ['r', 'decimal places of %s', 'count_dec', ''],
             ['r', 'negate %s', 'negate', ''],
             ['r', 'trim %s', 'trim', ''],
@@ -311,90 +315,87 @@
     };
 
     ext.do_div = function (n1, n2) {
-        if (n2 == 0) {
-            return (n1 == 0) ? 'NaN' : 'Infinity';
-        } else {
-            if (n1 == 0) return 0;
+        if (n2 == 0) return (n1 == 0) ? 'NaN' : 'Infinity';
+        if (n1 == 0) return 0;
 
-            n1 = n1.split(''); // Convert to arrays
-            n2 = n2.split('');
+        n1 = n1.split(''); // Convert to arrays
+        n2 = n2.split('');
 
-            // Check if denominator has a decimal point, and if so
-            // count the decimal places and shift it by a magnitude
-            // until it is an integer.  Extend the numerator with
-            // zeroes then move its decimal point equally.
+        // Check if denominator has a decimal point, and if so
+        // count the decimal places and shift it by a magnitude
+        // until it is an integer.  Extend the numerator with
+        // zeroes then move its decimal point equally.
 
-            var dec = n2.indexOf('.') + 1;
+        var dec = n2.indexOf('.') + 1;
+        if (dec) {
+            var decPlaces = n2.length - dec;
+            n1.del(dec - 1);
+            
+            for (var i = 0; i < decPlaces; i++) n1.add ('0');
+
+            dec = n1.indexOf('.') + 1;
             if (dec) {
-                var decPlaces = n2.length - dec;
-                n1.del(dec - 1);
-
-                for (var i = 0; i < decPlaces; i++) n1 += '0';
-
-                dec = n1.indexOf('.') + 1;
-                if (dec) {
-                    for (i = 0; i < decPlaces; i++) {
-                        var temp = n1[dec - 1];
-                        n1[dec - 1] = n1[dec];
-                        n1[dec] = temp;
-                        dec++;
-                    }
+                for (i = 0; i < decPlaces; i++) {
+                    var temp = n1[dec - 1];
+                    n1[dec - 1] = n1[dec];
+                    n1[dec] = temp;
+                    dec++;
                 }
             }
-
-            // Remove negation signs
-            var sign = 1;
-            if (n1.indexOf('-') > -1) {
-                n1.del(0);
-                sign *= -1;
-            }
-            if (n2.indexOf('-') > -1) {
-                n2.del(0);
-                sign *= -1;
-            }
-
-            dec = 0; // decimal places
-            var rem = ""; // remainder
-            var result = []; // quotient
-            var divcount = 0; // counter for subtractions from remainder
-
-            var i = 0;
-            while (dec < precision || i < n1.length || rem > 0) {
-                if (result.indexOf('.') > -1) dec++;
-
-                divcount = 0;
-                var temp = n1[i];
-
-                if (temp == '.') {
-                    // Decimal place found
-                    result.add('.');
-                } else {
-                    // Append the next digit to remainder
-                    if (i < n1.length) {
-                        rem += temp.toString();
-                    } else {
-                        if (result.indexOf('.') == -1) result.add('.');
-                        if (rem != 0) rem += '0';
-                    }
-
-                    // Do long division
-                    if (rem.length >= n2.length) {
-                        while (rem > n2) {
-                            rem = do_sub(rem, n2);
-                            divcount++;
-                        }
-                    }
-                    // Append digit to result
-                    result.add(divcount);
-                }
-                i++;
-            }
-            // negate result
-            if (sign < 0) result.insert(0, '-');
-
-            result = trim(result);
-            return result;
         }
+
+        // Remove negation signs
+        var sign = 1;
+        if (n1.indexOf('-') > -1) {
+            n1.del(0);
+            sign *= -1;
+        }
+        if (n2.indexOf('-') > -1) {
+            n2.del(0);
+            sign *= -1;
+        }
+
+        dec = 0; // decimal places
+        var rem = ""; // remainder
+        var result = []; // quotient
+        var divcount; // counter for subtractions from remainder
+
+        var i = 0;
+        while (dec < precision || i < n1.length || rem > 0) {
+            if (result.indexOf('.') > -1) dec++;
+
+            divcount = 0;
+            var temp = n1[i];
+            
+            if (temp == '.') {
+                // Decimal place found
+                result.add('.');
+            } else {
+                // Append the next digit to remainder
+                if (i < n1.length) {
+                    rem += temp.toString();
+                } else {
+                    if (result.indexOf('.') == -1) result.add('.');
+                    if (rem != 0) rem += '0';
+                }
+
+                // Do long division
+                if (rem.length >= n2.length) {
+                    while (rem > n2) {
+                        rem = do_sub(rem, n2);
+                        divcount++;
+                    }
+                }
+                // Append digit to result
+                result.add(divcount);
+            }
+            i++;
+        }
+        // negate result
+        if (sign < 0) result.insert(0, '-');
+        
+        result = trim(result);
+        return result;
     };
 
     ext.do_exp = function (n1, n2) {
@@ -406,12 +407,18 @@
             alert("Sorry, only integer exponents are supported. :(");
             return 0;
         }
-        if (n2 > 65535) {
-            alert("Whoa now! Avoid using exponents larger than 65535.");
+        if (Math.abs(n2) > 65535) {
+            alert("Whoa now! Avoid using exponents larger than (-)65535.");
             return 0;
+        }
+        var neg = false;
+        if (n2.indexOf('-') == 0) {
+            n2 = negate(n2);
+            n = true;
         }
         var result = 1;
         for (var i = 0; i < n2; i++) result = do_mult(n1, result);
+        if (neg) result = do_div(1, result);
 
         //result = trim(result);
         return result;
@@ -466,6 +473,38 @@
         //result = trim(result);
         return result;
     };
+    
+    ext.do_abs = function (n) {
+        if (n.indexOf('-') == 0) return negate(n);
+        else return n;
+    };
+    
+    ext.do_round = function (n) {
+        if (n.indexOf('.') > 0) {
+            n = n.split('');
+            var i = n.length - 1;
+            
+            //while (n[i - 1] != '.') {
+            //    n.del(i);
+            //    i--;
+            //}
+            
+            var calc = 0;
+            var carry = (n[i] > 4) ? 1 : 0;
+            while (carry) {
+                i--;
+                if (n[i] != '.') {
+                    calc = n[i] + carry;
+                    carry = Math.floor(calc / 10);
+                    n[i] = calc % 10;
+                }
+            }
+            n.del(n.length - 1); // remove last decimal place
+            n.del(n.length - 1); // remove decimal point
+            n = n.join('');
+        }
+        return n;
+    };
 
 
     ext.count_int = function (n) {
@@ -499,8 +538,8 @@
         var sign = (s[0] == '-') ? 1 : 0;
         while (s[sign] == 0 && s[sign + 1] != '.') s.del(sign);
 
-        // round number within precision
-        var dec = count_dec(s)
+        // round number WITHIN precision
+        var dec = count_dec(s);
         if (dec) {
             var i = s.length - 1;
             var calc = 0;
@@ -510,12 +549,12 @@
                     s.del(i);
                     dec--;
                 }
-            }
-            i--;
-            if (s[i] != '.') {
-                calc = s[i] + carry;
-                carry = Math.floor(calc / 10);
-                s[i] = calc % 10;
+                i--;
+                if (s[i] != '.') {
+                    calc = s[i] + carry;
+                    carry = Math.floor(calc / 10);
+                    s[i] = calc % 10;
+                }
             }
         }
         return s.join('');
