@@ -206,7 +206,7 @@
 
         // perform parallel digit-wise addition or subtraction
 
-        var result[((n1.length > n2.length) ? n1.length : n2.length) + 1];
+        var result = new Array(n1.length + 1);
         var n1_digit, n2_digit;
         var calc = 0,
             carry = 0;
@@ -280,7 +280,7 @@
         if (n1_decCount) n1.del(n1.indexOf('.'));
         if (n2_decCount) n2.del(n2.indexOf('.'));
 
-        var result[n1.length + n2.length];
+        var result = new Array(n1.length + n2.length);
 
         var n1_digit, n2_digit, r_i;
 
