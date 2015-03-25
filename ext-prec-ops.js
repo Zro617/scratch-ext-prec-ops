@@ -556,7 +556,7 @@
         while (n[sign] == 0 && n[sign + 1] != '.') n.del(sign);
 
         // round number WITHIN precision
-        var dec = count_dec(n);
+        var dec = count_dec(n.join(''));
         if (dec) {
             var i = n.length - 1;
             var calc = 0;
@@ -574,14 +574,14 @@
                 }
             }
         }
-        return arr.join('');
+        return n.join('');
     };
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
         if (!(n instanceof Array)) n = n.toString().split('');
         if (n[0] == '-') n.shift();
-        else n.insert(0, '-');
+        else n.unshift('-');
         return n.join('');
     };
 
@@ -598,16 +598,15 @@
     };
 
     ext.check_num = function (n, type) {
-        n = Number(n);
         switch (type) {
             case 'integer':
-                return (!n.isNaN && n.indexOf('.') == -1);
+                return (!(Number(n).isNaN) && n.toString().indexOf('.') == -1);
             case 'decimal':
-                return (!n.isNaN && n.indexOf('.') > -1);
+                return (!(Number(n).isNaN) && n.toString().indexOf('.') > -1);
             case 'NaN':
-                return n.isNaN;
+                return Number(n).isNaN;
             case 'infinity':
-                return !n.isFinite;
+                return !(Number(n).isFinite);
         }
     };
 
@@ -630,34 +629,29 @@
             if (idx < this.length / 2) {
                 // item to delete is in the first half
                 
+                // push the first item of the Array onto stack
                 for (var i = 0; i<idx;i++) {
-                    temp.unshift(this[0]);
+                    temp.push(this[0]);
                     this.shift();
                 }
                 // delete item
                 this.shift();
                 
                 // return items to array
-                while (temp.length > 0) {
-                    this.unshift(temp[0]);
-                    temp.shift();
-                }
+                this.concat(temp,this);
             } else {
                 // item to delete is in latter half
                 
+                // unshift the last item of the Array onto stack
                 for (var i = this.length - 1;i > idx;i--) {
-                    temp.push(this[i]);
+                    temp.unshift(this[i]);
                     this.pop();
                 }
                 // delete item
                 this.pop();
                 
                 // return items to array
-                i = temp.length - 1
-                while (i > -1) {
-                    this.push(temp[i]);
-                    temp.pop();
-                }
+                this.concat(this,temp);
             }
         }
     }
