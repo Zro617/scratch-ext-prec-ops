@@ -494,7 +494,7 @@
 
     ext.do_abs = function (n) {
         if (String(n).indexOf('-') === '0') return negate(n);
-        else String(return n);
+        else return String(n);
     };
 
     ext.do_round = function (n) {
