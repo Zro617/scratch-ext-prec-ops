@@ -484,10 +484,10 @@
             n = n.split('');
             var i = n.length - 1;
             
-            //while (n[i - 1] != '.') {
-            //    n.del(i);
-            //    i--;
-            //}
+            while (n[i - 1] != '.') {
+                n.del(i);
+                i--;
+            }
             
             var calc = 0;
             var carry = (n[i] > 4) ? 1 : 0;
@@ -519,7 +519,9 @@
     }
 
     ext.count_dec = function (n) {
-        return (n.length - (n.indexOf('.') + 1));
+        var dec = n.indexOf('.') + 1;
+        if (dec) return n.length - dec;
+        else return 0;
     };
 
 
