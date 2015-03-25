@@ -87,7 +87,7 @@
             ['r', 'trim %s', 'trim', ''],
             ['r', '%s is %m.PosNegZero ?', 'check_sign', '', 'negative'],
             ['r', '%s is %m.IntDecNaNInf ?', 'check_num', '', 'integer']
-        ];
+        ],
         menus: {
             PosNegZero: ['positive', 'negative', 'zero'],
             IntDecNaNInf: ['integer', 'decimal', 'NaN', 'infinity']
