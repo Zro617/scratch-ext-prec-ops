@@ -9,6 +9,10 @@ this extension, add a bookmark to your browser with the following link:
 
 When you want to use it, click the bookmark when on any Scratch project webpage.  
 
+Or, if you prefer to load it from the console, use this:  
+
+`ScratchExtensions.loadExternalJs('https://raw.githubusercontent.com/Zro617/scratch-ext-prec-ops/master/ext-prec-ops.js');`
+
 I apologize if you are unable to install the extension as a result of future updates to
 the Scratch online player.  
 
@@ -34,6 +38,8 @@ ENHANCED OPERATORS:
   * [] mod []
   * []!
   * sqrt of []
+  * abs of []
+  * round []
   * trim []
   * negate []
   * decimal places of []
