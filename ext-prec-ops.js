@@ -163,6 +163,9 @@
     ///////////////////////////////////
 
     ext.do_add = function (n1, n2) {
+        n1 = String(n1);
+        n2 = String(n2);
+        
         // Preventive measure for numbers within native accuracy
         if (n1.length < 15 && n2.length < 15) return Number(n1) + Number(n2);
 
@@ -206,7 +209,7 @@
 
         // perform parallel digit-wise addition or subtraction
 
-        var result = new Array(n1.length + 1);
+        var result = new Array(n1.length);
         var n1_digit, n2_digit;
         var calc = 0,
             carry = 0;
@@ -226,11 +229,10 @@
             carry = Math.floor(calc / 10);
             result[result.length - idx] = calc % 10;
         }
-        // set extra digit to carry value
-        result[0] = carry % 10;
+        if (carry) result.insert(0,carry % 10);
 
         // insert decimal point
-        if (n1_decCount) result.insert(result.length - n1_decCount, '.');
+        if (n1_decCount) result.insert(result.length - (n1_decCount + 1), '.');
 
         // check if the result should be negative
         if (n1_signed === n2_signed) {
@@ -249,7 +251,7 @@
         }
 
         result = trim(result);
-        return result;
+        return String(result);
     };
 
     ext.do_sub = function (n1, n2) {
@@ -261,9 +263,12 @@
     };
 
     ext.do_mult = function (n1, n2) {
+        n1 = String(n1);
+        n2 = String(n2);
+        
         // Preventive measure for numbers within native accuracy
         if (n1.length + n2.length < 13) return Number(n1) * Number(n2);
-
+        
         // preparations
         var n1_decCount = count_dec(n1);
         var n1_signed = (n1.indexOf('-') === '0');
@@ -319,11 +324,11 @@
     };
 
     ext.do_div = function (n1, n2) {
-        if (n2 === '0') return (n1 === '0') ? 'NaN' : 'Infinity';
-        if (n1 === '0') return 0;
+        if (Number(n2) == 0) return (Number(n1) == 0) ? 'NaN' : 'Infinity';
+        if (Number(n1) === '0') return 0;
 
-        n1 = n1.split(''); // Convert to arrays
-        n2 = n2.split('');
+        n1 = String(n1).split(''); // Convert to arrays
+        n2 = String(n2).split('');
 
         // Check if denominator has a decimal point, and if so
         // count the decimal places and shift it by a magnitude
@@ -400,7 +405,7 @@
         if (sign < 0) result.insert(0, '-');
 
         result = trim(result);
-        return result;
+        return String(result);
     };
 
     ext.do_exp = function (n1, n2) {
@@ -408,11 +413,11 @@
         var temp = Math.pow(Number(n1), Number(n2));
         if (temp.length < 14) return temp;
 
-        if (n2 % 1 > 0) {
+        if (Number(n2) % 1 > 0) {
             alert("Sorry, only integer exponents are supported. :(");
             return 0;
         }
-        if (Math.abs(n2) > 65535) {
+        if (Math.abs(Number(n2)) > 65535) {
             alert("Whoa now! Avoid using exponents larger than (-)65535.");
             return 0;
         }
@@ -421,27 +426,33 @@
             n2 = negate(n2);
             n = true;
         }
-        var result = 1;
-        for (var i = 0; i < n2; i++) result = do_mult(n1, result);
+        n1 = String(n1);
+        n2 = Number(n2);
+        var result = '1';
+        
+        for (var i = 0; i < n2; i++) result = do_mult(result, n1);
         if (neg) result = do_div(1, result);
 
         //result = trim(result);
-        return result;
+        return String(result);
     };
 
     ext.do_mod = function (n1, n2) {
+        n1 = String(n1);
+        n2 = String(n2);
         // Preventive measure for numbers within native accuracy
-        if (n1.length < 15 && n2.length < 15) return n1 % n2;
+        if (n1.length < 15 && n2.length < 15) return Number(n1) % Number(n2);
 
         while (n1 < 0) n1 = do_add(n1, n2);
         while (n1 >= n2) n1 = do_sub(n1, n2);
 
         //n1 = trim(n1);
-        return n1;
+        return String(n1);
     };
 
     ext.do_fact = function (n) {
-        if (n % 1 > 0 || n < 0) return 1;
+        n = Number(n);
+        if (n % 1 > 0 || n < 0) return 0;
 
         var result = [1];
         while (n > 1) {
@@ -460,11 +471,13 @@
         }
 
         result = trim(result);
-        return result;
+        return String(result);
     };
 
     ext.do_sqrt = function (n) {
-        if (n < 0) return 'NaN';
+        if (Number(n) < 0) return 'NaN';
+        
+        n = String(n);
 
         // Uses the Babylonian method for solving a square root
         var result = 0,
@@ -476,15 +489,16 @@
         oldresults.clear();
 
         //result = trim(result);
-        return result;
+        return String(result);
     };
 
     ext.do_abs = function (n) {
-        if (n.indexOf('-') === '0') return negate(n);
-        else return n;
+        if (String(n).indexOf('-') === '0') return negate(n);
+        else String(return n);
     };
 
     ext.do_round = function (n) {
+        n = String(n);
         if (n.indexOf('.') > 0) {
             n = n.split('');
             var i = n.length - 1;
@@ -510,37 +524,39 @@
             n.del(n.length - 1); // remove decimal point
             n = n.join('');
         }
-        return n;
+        return String(n);
     };
 
 
     ext.count_int = function (n) {
+        n = String(n);
         var dec = n.indexOf('.') + 1;
         var neg = n.indexOf('-') + 1;
         if (dec) {
             // If number has decimal places
-            return dec - (neg + 1);
+            return Number(dec - (neg + 1));
         } else {
-            return n.length - neg;
+            return Number(n.length - neg);
         }
     };
 
     ext.count_dec = function (n) {
+        n = String(n);
         var dec = n.indexOf('.') + 1;
-        if (dec) return n.length - dec;
-        else return 0;
+        if (dec) return Number(n.length - dec);
+        else return Number(0);
     };
 
 
-    ext.trim = function (s) {
+    ext.trim = function (n) {
         // remove extra zeroes that were used for padding
 
-        if (!(s instanceof Array)) s = s.split('');
+        if (n !instanceof Array) n = String(n).split('');
 
-        if (s.indexOf('.') > -1) {
+        if (n.indexOf('.') > -1) {
             // remove trailing zeroes
-            while (s[s.length - 1] !== '0') s.pop();
-            if (s[s.length - 1] == '.') s.pop();
+            while (n[n.length - 1] !== '0') n.pop();
+            if (n[n.length - 1] == '.') n.pop();
         }
 
         // remove leading zeroes
@@ -566,22 +582,23 @@
                 }
             }
         }
-        return s.join('');
+        return String(s.join(''));
     };
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
-        n = n.split('');
+        if (n !instanceof Array) n = String(n).split('');
         if (n[0] == '-') n.del(0);
         else n.insert(0, '-');
-        return n.join('');
+        return String(n.join(''));
     };
 
     ext.check_sign = function (n, sign) {
+        n = String(n);
         if (n.isNaN) return false;
         switch (sign) {
             case 'zero':
-                return (n === '0');
+                return (Number(n) == 0);
             case 'negative':
                 return (n.indexOf('-') === '0');
             case 'positive':
@@ -590,6 +607,7 @@
     };
 
     ext.check_num = function (n, type) {
+        n = Number(n);
         switch (type) {
             case 'integer':
                 return (!n.isNaN && n.indexOf('.') == -1);
