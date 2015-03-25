@@ -1,6 +1,6 @@
 /* @name          EnhancedPrecisionOperators
- * @author        Zach R
- * @version       1.0.8
+ * @author        Zach R (Zro617/Zro716)
+ * @version       1.0.9
  * @lastCommit    March 24, 2015
  *
  *
@@ -55,6 +55,11 @@
  *  + negate     = invert a number's sign
  *  + check_sign = check if a number is +, -, or 0
  *  + check_num  = check if a number is an integer, decimal, not a number (NaN), or +/- infinity
+ *
+ *
+ *  These methods are to compensate for the lack of functionality with Arrays
+ *  ~ Array.prototype.insert
+ *  ~ Array.prototype.del
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
@@ -82,6 +87,7 @@
             ['r', 'sqrt of %s', 'do_sqrt', ''],
             ['r', 'abs of %s', 'do_abs', ''],
             ['r', 'round %s', 'do_round', ''],
+            ['r', 'integer places of %s', 'count_int', ''],
             ['r', 'decimal places of %s', 'count_dec', ''],
             ['r', 'negate %s', 'negate', ''],
             ['r', 'trim %s', 'trim', ''],
@@ -121,35 +127,33 @@
     ext.calc_pi = function (digits) {
         if (digits < 0) return 0;
         if (pi.length - 2 == precision) return pi;
-        else {
-            var oldprecision = precision;
-            var oldpi = pi;
+        
+        var oldprecision = precision;
+        var oldpi = pi;
 
-            set_max_precision(digits);
-            pi = 0;
+        set_max_precision(digits);
+        pi = 0;
 
-            var a = 1,
-                an, ab;
-            var b = do_div(1, do_sqrt(2));
-            var t = 0.25;
-            var p = 1;
+        var a = 1, an, ab;
+        var b = do_div(1, do_sqrt(2));
+        var t = 0.25;
+        var p = 1;
 
-            while (pi != oldpi) {
-                pi = oldpi;
+        while (pi != oldpi) {
+            pi = oldpi;
 
-                an = do_div(do_add(a, b), 2);
-                b = do_sqrt(do_mult(a, b));
-                ab = do_mult(a, b);
-                t = do_sub(t, do_mult(p, do_mult(ab, ab)));
-                p = do_mult(p, 2);
-                a = an;
+            an = do_div(do_add(a, b), 2);
+            b  = do_sqrt(do_mult(a, b));
+            ab = do_mult(a, b);
+            t  = do_sub(t, do_mult(p, do_mult(ab, ab)));
+            p  = do_mult(p, 2);
+            a  = an;
 
-                ab = do_add(a, b);
-                oldpi = do_div(do_mult(ab, ab), do_mult(4, t));
-            }
-
-            precision = oldprecision;
+            ab = do_add(a, b);
+            oldpi = do_div(do_mult(ab, ab), do_mult(4, t));
         }
+
+        precision = oldprecision;
     };
 
     ///////////////////////////////////
@@ -161,23 +165,23 @@
         n2 = n2.toString();
         
         // Preventive measure for numbers within native accuracy
-        if (n1.length < 15 && n2.length < 15) return Number(n1) + Number(n2);
+        if (n1.length < 14 && n2.length < 14) return Number(n1) + Number(n2);
 
         // determine placements of the decimals and count integer places vs decimal places
         var n1_intCount = count_int(n1);
         var n1_decCount = count_dec(n1);
-        var n1_signed = (n1.indexOf('-') === '0');
+        var n1_signed = (n1.indexOf('-') == 0);
         var n2_intCount = count_int(n2);
         var n2_decCount = count_dec(n2);
-        var n2_signed = (n2.indexOf('-') === '0');
+        var n2_signed = (n2.indexOf('-') == 0);
 
         // convert to arrays
         n1 = n1.split('');
         n2 = n2.split('');
 
         // remove negation signs
-        if (n1_signed) n1.del(0);
-        if (n2_signed) n2.del(0);
+        if (n1_signed) n1.shift();
+        if (n2_signed) n2.shift();
 
         // remove decimal points
         if (n1_decCount) n1.del(n1.indexOf('.'));
@@ -186,17 +190,17 @@
         // align summands
         while (n1_intCount != n2_intCount && n1_decCount != n2_decCount) {
             if (n1_intCount > n2_intCount) {
-                n2.insert(0, '0');
+                n2.unshift('0');
                 n2_intCount++;
             } else if (n2_intCount > n1_intCount) {
-                n1.insert(0, '0');
+                n1.unshift('0');
                 n1_intCount++;
             }
             if (n1_decCount > n2_decCount) {
-                n2.add('0');
+                n2.push('0');
                 n2_decCount++;
             } else if (n2_decCount > n1_decCount) {
-                n1.add('0');
+                n1.push('0');
                 n1_decCount++;
             }
         }
@@ -204,36 +208,31 @@
         // perform parallel digit-wise addition or subtraction
 
         var result = new Array(n1.length);
-        var n1_digit, n2_digit;
-        var calc = 0,
-            carry = 0;
+        var calc, carry = 0;
 
         for (var idx = result.length - 1; idx > 0; idx--) {
-            n1_digit = n1[idx];
-            n2_digit = n2[idx];
-            if (n1_signed === n2_signed) {
-                calc = n1_digit + n2_digit + carry;
+            if (n1_signed == n2_signed) {
+                calc = n1[idx] + n2[idx] + carry;
+            } else if (n1_signed) {
+                calc = n2[idx] - n1[idx] + carry;
             } else {
-                if (n1_signed) {
-                    calc = n2_digit - n1_digit + carry;
-                } else {
-                    calc = n1_digit - n2_digit + carry;
-                }
+                calc = n1[idx] - n2[idx] + carry;
             }
             carry = Math.floor(calc / 10);
-            result[result.length - idx] = calc % 10;
+            result[idx] = calc % 10;
         }
-        if (carry) result.insert(0,carry % 10);
+        // add another digit if needed
+        if (carry) result.unshift(carry);
 
         // insert decimal point
         if (n1_decCount) result.insert(result.length - (n1_decCount + 1), '.');
 
         // check if the result should be negative
-        if (n1_signed === n2_signed) {
-            if (n1_signed) result.insert(0, '-');
+        if (n1_signed == n2_signed) {
+            if (n1_signed) result.unshift('-');
         } else if (carry < 0) {
             carry = 0;
-            for (idx = result.length - 1; idx > 0; idx++) {
+            for (idx = result.length - 1; idx >= 0; idx++) {
                 calc = result[idx];
                 if (calc != '.') {
                     calc = carry - calc;
@@ -241,7 +240,7 @@
                     result[idx] = calc % 10;
                 }
             }
-            result.insert(0, '-');
+            result.unshift('-');
         }
 
         result = trim(result);
@@ -253,7 +252,8 @@
          * negative numbers as well, so save some
          * redundant coding and use that instead.
          */
-        return do_add(n1, negate(n2));
+        n2 = negate(n2.toString());
+        return do_add(n1, n2);
     };
 
     ext.do_mult = function (n1, n2) {
@@ -265,9 +265,9 @@
         
         // preparations
         var n1_decCount = count_dec(n1);
-        var n1_signed = (n1.indexOf('-') === '0');
+        var n1_signed = (n1.indexOf('-') == 0);
         var n2_decCount = count_dec(n2);
-        var n2_signed = (n2.indexOf('-') === '0');
+        var n2_signed = (n2.indexOf('-') == 0);
 
         var signed = (n1_signed != n2_signed);
 
@@ -276,8 +276,8 @@
         n2 = n2.split('');
 
         // remove negation signs
-        if (n1_signed) n1.del(0);
-        if (n2_signed) n2.del(0);
+        if (n1_signed) n1.shift();
+        if (n2_signed) n2.shift();
 
         // remove decimal points
         if (n1_decCount) n1.del(n1.indexOf('.'));
@@ -311,7 +311,7 @@
         if (dec) result.insert(result.length - (dec + 1), '.');
 
         // negate result
-        if (signed) result.insert(0, '-');
+        if (signed) result.unshift('-');
 
         result = trim(result);
         return result;
@@ -319,7 +319,7 @@
 
     ext.do_div = function (n1, n2) {
         if (Number(n2) == 0) return (Number(n1) == 0) ? 'NaN' : 'Infinity';
-        if (Number(n1) === '0') return 0;
+        if (Number(n1) == 0) return 0;
 
         n1 = n1.toString().split(''); // Convert to arrays
         n2 = n2.toString().split('');
@@ -335,7 +335,7 @@
             var decPlaces = n2.length - dec;
             n1.del(dec - 1);
 
-            for (i = 0; i < decPlaces; i++) n1.add('0');
+            for (i = 0; i < decPlaces; i++) n1.push('0');
 
             dec = n1.indexOf('.') + 1;
             if (dec) {
@@ -351,11 +351,11 @@
         // Remove negation signs
         var sign = 1;
         if (n1.indexOf('-') > -1) {
-            n1.del(0);
+            n1.shift();
             sign *= -1;
         }
         if (n2.indexOf('-') > -1) {
-            n2.del(0);
+            n2.shift();
             sign *= -1;
         }
 
@@ -373,14 +373,14 @@
 
             if (temp == '.') {
                 // Decimal place found
-                result.add('.');
+                result.push('.');
             } else {
                 // Append the next digit to remainder
                 if (i < n1.length) {
                     rem += temp.toString();
                 } else {
-                    if (result.indexOf('.') == -1) result.add('.');
-                    if (rem !== '0') rem += '0';
+                    if (result.indexOf('.') == -1) result.push('.');
+                    if (rem != 0) rem += '0';
                 }
 
                 // Do long division
@@ -391,12 +391,12 @@
                     }
                 }
                 // Append digit to result
-                result.add(divcount);
+                result.push(divcount);
             }
             i++;
         }
         // negate result
-        if (sign < 0) result.insert(0, '-');
+        if (sign < 0) result.unshift('-');
 
         result = trim(result);
         return result;
@@ -416,7 +416,7 @@
             return 0;
         }
         var neg = false;
-        if (n2.indexOf('-') === '0') {
+        if (n2.indexOf('-') == 0) {
             n2 = negate(n2);
             n = true;
         }
@@ -458,7 +458,7 @@
                 result[i] = calc % 10;
             }
             while (carry > 0) {
-                result.insert(0, carry % 10);
+                result.unshift(carry % 10);
                 carry = Math.floor(carry / 10);
             }
             n--;
@@ -477,7 +477,7 @@
         var result = 0,
             oldresults = [];
         while (oldresults.indexOf(result) == -1) {
-            oldresults.add(results);
+            oldresults.push(results);
             result = do_mult(0.5, do_add(result, do_div(n, result)));
         }
         oldresults.clear();
@@ -488,7 +488,7 @@
 
     ext.do_abs = function (n) {
         n = n.toString();
-        if (n.indexOf('-') === '0') n = negate(n);
+        if (n.indexOf('-') == 0) n = negate(n);
         return n;
     };
 
@@ -500,7 +500,7 @@
             
             // remove all but the last decimal place
             while (n[i - 1] != '.') {
-                n.del(i);
+                n.pop();
                 i--;
             }
 
@@ -515,8 +515,8 @@
                     n[i] = calc % 10;
                 }
             }
-            n.del(n.length - 1); // remove last decimal place
-            n.del(n.length - 1); // remove decimal point
+            n.pop(); // remove last decimal place
+            n.pop(); // remove decimal point
             n = n.join('');
         }
         return n;
@@ -527,36 +527,33 @@
         n = n.toString();
         var dec = n.indexOf('.') + 1;
         var neg = n.indexOf('-') + 1;
-        if (dec) {
-            // If number has decimal places
-            return dec - (neg + 1);
-        } else {
-            return n.length - neg;
-        }
+        if (dec) return dec - (neg + 1);
+        return n.length - neg;
     };
 
     ext.count_dec = function (n) {
-        n = n.toString;
+        n = n.toString();
         var dec = n.indexOf('.') + 1;
         if (dec) return n.length - dec;
-        else return 0;
+        return 0;
     };
 
 
+    // in need of major work here...
     ext.trim = function (n) {
         // remove extra zeroes that were used for padding
-
-        if (!(n instanceof Array)) n = n.toString().split('');
+        
+        if (n instanceof Array) {}
+        else n = n.toString().split('');
 
         if (n.indexOf('.') > -1) {
             // remove trailing zeroes
-            while (n[n.length - 1] !== '0') n.pop();
+            while (n[n.length - 1] != 0) n.pop();
             if (n[n.length - 1] == '.') n.pop();
         }
-
         // remove leading zeroes
-        var sign = (n[0] == '-') ? 1 : 0;
-        while (n[sign] === '0' && n[sign + 1] != '.') n.del(sign);
+        var sign = n.indexOf('-') + 1;
+        while (n[sign] == 0 && n[sign + 1] != '.') n.del(sign);
 
         // round number WITHIN precision
         var dec = count_dec(n);
@@ -566,7 +563,7 @@
             var carry = (n[i] > 4) ? 1 : 0;
             while (carry || dec > precision) {
                 if (n.indexOf('.') > -1) {
-                    n.del(i);
+                    n.pop();
                     dec--;
                 }
                 i--;
@@ -577,27 +574,26 @@
                 }
             }
         }
-        return n.join('');
+        return arr.join('');
     };
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
         if (!(n instanceof Array)) n = n.toString().split('');
-        if (n[0] == '-') n.del(0);
+        if (n[0] == '-') n.shift();
         else n.insert(0, '-');
         return n.join('');
     };
 
     ext.check_sign = function (n, sign) {
-        n = n.toString();
         if (n.isNaN) return false;
         switch (sign) {
             case 'zero':
                 return (Number(n) == 0);
             case 'negative':
-                return (n.indexOf('-') === '0');
+                return (n.toString().indexOf('-') == 0);
             case 'positive':
-                return (n.indexOf('-') == -1 && n !== '0');
+                return (n.toString().indexOf('-') == -1 && Number(n) != 0);
         }
     };
 
@@ -616,11 +612,55 @@
     };
 
 
-    // Insert is not native to JavaScript
+    // Insert is not native to JavaScript Arrays
     Array.prototype.insert = function (idx, x) {
         this.splice(idx, 0, x);
     };
-
+    
+    // Neither is delete
+    Array.prototype.del = function(idx) {
+        if (idx == this.length - 1) {
+            this.pop();
+        } else if (idx == 0) {
+            this.shift();
+        } else if (idx > 0 && idx < this.length) {
+            // temp stack
+            var temp = [];
+            
+            if (idx < this.length / 2) {
+                // item to delete is in the first half
+                
+                for (var i = 0; i<idx;i++) {
+                    temp.unshift(this[0]);
+                    this.shift();
+                }
+                // delete item
+                this.shift();
+                
+                // return items to array
+                while (temp.length > 0) {
+                    this.unshift(temp[0]);
+                    temp.shift();
+                }
+            } else {
+                // item to delete is in latter half
+                
+                for (var i = this.length - 1;i > idx;i--) {
+                    temp.push(this[i]);
+                    this.pop();
+                }
+                // delete item
+                this.pop();
+                
+                // return items to array
+                i = temp.length - 1
+                while (i > -1) {
+                    this.push(temp[i]);
+                    temp.pop();
+                }
+            }
+        }
+    }
 
     ////////////////////////////
     // Register the extension //
