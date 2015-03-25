@@ -516,7 +516,7 @@
         } else {
             return n.length - neg;
         }
-    }
+    };
 
     ext.count_dec = function (n) {
         var dec = n.indexOf('.') + 1;
@@ -528,7 +528,7 @@
     ext.trim = function (s) {
         // remove extra zeroes that were used for padding
 
-        if (s.join('') === s) s = s.split('');
+        if (!(s instanceof Array)) s = s.split('');
 
         if (s.indexOf('.') > -1) {
             // remove trailing zeroes
