@@ -551,7 +551,7 @@
     ext.trim = function (n) {
         // remove extra zeroes that were used for padding
 
-        if (n !instanceof Array) n = String(n).split('');
+        if (!(n instanceof Array)) n = String(n).split('');
 
         if (n.indexOf('.') > -1) {
             // remove trailing zeroes
@@ -587,7 +587,7 @@
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
-        if (n !instanceof Array) n = String(n).split('');
+        if (!(n instanceof Array)) n = String(n).split('');
         if (n[0] == '-') n.del(0);
         else n.insert(0, '-');
         return String(n.join(''));
