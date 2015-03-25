@@ -1,6 +1,6 @@
 /* @name          EnhancedPrecisionOperators
  * @author        Zach R
- * @version       1.0.7
+ * @version       1.0.8
  * @lastCommit    March 24, 2015
  *
  *
@@ -106,15 +106,9 @@
 
 
     // getters
-    ext.get_pi = function () {
-        return pi;
-    };
-    ext.get_precision = function () {
-        return precision;
-    };
-    ext.installed = function () {
-        return true;
-    };
+    ext.get_pi = function () { return pi; };
+    ext.get_precision = function () { return precision; };
+    ext.installed = function () { return true; };
 
     // setters
     ext.set_max_precision = function (digits) {
@@ -163,8 +157,8 @@
     ///////////////////////////////////
 
     ext.do_add = function (n1, n2) {
-        n1 = String(n1);
-        n2 = String(n2);
+        n1 = n1.toString();
+        n2 = n2.toString();
         
         // Preventive measure for numbers within native accuracy
         if (n1.length < 15 && n2.length < 15) return Number(n1) + Number(n2);
@@ -251,7 +245,7 @@
         }
 
         result = trim(result);
-        return String(result);
+        return result;
     };
 
     ext.do_sub = function (n1, n2) {
@@ -263,8 +257,8 @@
     };
 
     ext.do_mult = function (n1, n2) {
-        n1 = String(n1);
-        n2 = String(n2);
+        n1 = n1.toString();
+        n2 = n2.toString();
         
         // Preventive measure for numbers within native accuracy
         if (n1.length + n2.length < 13) return Number(n1) * Number(n2);
@@ -327,8 +321,8 @@
         if (Number(n2) == 0) return (Number(n1) == 0) ? 'NaN' : 'Infinity';
         if (Number(n1) === '0') return 0;
 
-        n1 = String(n1).split(''); // Convert to arrays
-        n2 = String(n2).split('');
+        n1 = n1.toString().split(''); // Convert to arrays
+        n2 = n2.toString().split('');
 
         // Check if denominator has a decimal point, and if so
         // count the decimal places and shift it by a magnitude
@@ -405,7 +399,7 @@
         if (sign < 0) result.insert(0, '-');
 
         result = trim(result);
-        return String(result);
+        return result;
     };
 
     ext.do_exp = function (n1, n2) {
@@ -426,28 +420,28 @@
             n2 = negate(n2);
             n = true;
         }
-        n1 = String(n1);
+        n1 = n1.toString();
         n2 = Number(n2);
         var result = '1';
         
         for (var i = 0; i < n2; i++) result = do_mult(result, n1);
         if (neg) result = do_div(1, result);
 
-        //result = trim(result);
-        return String(result);
+        result = trim(result);
+        return result;
     };
 
     ext.do_mod = function (n1, n2) {
-        n1 = String(n1);
-        n2 = String(n2);
+        n1 = n1.toString();
+        n2 = n2.toString();
         // Preventive measure for numbers within native accuracy
         if (n1.length < 15 && n2.length < 15) return Number(n1) % Number(n2);
 
         while (n1 < 0) n1 = do_add(n1, n2);
         while (n1 >= n2) n1 = do_sub(n1, n2);
 
-        //n1 = trim(n1);
-        return String(n1);
+        n1 = trim(n1);
+        return n1;
     };
 
     ext.do_fact = function (n) {
@@ -471,13 +465,13 @@
         }
 
         result = trim(result);
-        return String(result);
+        return result;
     };
 
     ext.do_sqrt = function (n) {
         if (Number(n) < 0) return 'NaN';
         
-        n = String(n);
+        n = n.toString();
 
         // Uses the Babylonian method for solving a square root
         var result = 0,
@@ -488,17 +482,18 @@
         }
         oldresults.clear();
 
-        //result = trim(result);
-        return String(result);
+        result = trim(result);
+        return result;
     };
 
     ext.do_abs = function (n) {
-        if (String(n).indexOf('-') === '0') return negate(n);
-        else return String(n);
+        n = n.toString();
+        if (n.indexOf('-') === '0') n = negate(n);
+        return n;
     };
 
     ext.do_round = function (n) {
-        n = String(n);
+        n = n.toString();
         if (n.indexOf('.') > 0) {
             n = n.split('');
             var i = n.length - 1;
@@ -524,34 +519,34 @@
             n.del(n.length - 1); // remove decimal point
             n = n.join('');
         }
-        return String(n);
+        return n;
     };
 
 
     ext.count_int = function (n) {
-        n = String(n);
+        n = n.toString();
         var dec = n.indexOf('.') + 1;
         var neg = n.indexOf('-') + 1;
         if (dec) {
             // If number has decimal places
-            return Number(dec - (neg + 1));
+            return dec - (neg + 1);
         } else {
-            return Number(n.length - neg);
+            return n.length - neg;
         }
     };
 
     ext.count_dec = function (n) {
-        n = String(n);
+        n = n.toString;
         var dec = n.indexOf('.') + 1;
-        if (dec) return Number(n.length - dec);
-        else return Number(0);
+        if (dec) return n.length - dec;
+        else return 0;
     };
 
 
     ext.trim = function (n) {
         // remove extra zeroes that were used for padding
 
-        if (!(n instanceof Array)) n = String(n).split('');
+        if (!(n instanceof Array)) n = n.toString().split('');
 
         if (n.indexOf('.') > -1) {
             // remove trailing zeroes
@@ -560,41 +555,41 @@
         }
 
         // remove leading zeroes
-        var sign = (s[0] == '-') ? 1 : 0;
-        while (s[sign] === '0' && s[sign + 1] != '.') s.del(sign);
+        var sign = (n[0] == '-') ? 1 : 0;
+        while (n[sign] === '0' && n[sign + 1] != '.') n.del(sign);
 
         // round number WITHIN precision
-        var dec = count_dec(s);
+        var dec = count_dec(n);
         if (dec) {
-            var i = s.length - 1;
+            var i = n.length - 1;
             var calc = 0;
-            var carry = (s[i] > 4) ? 1 : 0;
+            var carry = (n[i] > 4) ? 1 : 0;
             while (carry || dec > precision) {
-                if (s.indexOf('.') > -1) {
-                    s.del(i);
+                if (n.indexOf('.') > -1) {
+                    n.del(i);
                     dec--;
                 }
                 i--;
-                if (s[i] != '.') {
-                    calc = s[i] + carry;
+                if (n[i] != '.') {
+                    calc = n[i] + carry;
                     carry = Math.floor(calc / 10);
-                    s[i] = calc % 10;
+                    n[i] = calc % 10;
                 }
             }
         }
-        return String(s.join(''));
+        return n.join('');
     };
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
-        if (!(n instanceof Array)) n = String(n).split('');
+        if (!(n instanceof Array)) n = n.toString().split('');
         if (n[0] == '-') n.del(0);
         else n.insert(0, '-');
-        return String(n.join(''));
+        return n.join('');
     };
 
     ext.check_sign = function (n, sign) {
-        n = String(n);
+        n = n.toString();
         if (n.isNaN) return false;
         switch (sign) {
             case 'zero':
