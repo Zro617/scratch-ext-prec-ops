@@ -126,12 +126,12 @@
     // http://en.wikipedia.org/wiki/Gauss-Legendre_algorithm
     ext.calc_pi = function (digits) {
         if (digits < 0) return 0;
+
+        var oldprecision = precision;
+        set_max_precision(digits);
         if (pi.length - 2 == precision) return pi;
         
-        var oldprecision = precision;
         var oldpi = pi;
-
-        set_max_precision(digits);
         pi = 0;
 
         var a = 1, an, ab;
@@ -550,7 +550,7 @@
     ext.trim = function (n) {
         // remove extra zeroes that were used for padding
         
-        if (n instanceof Array) {}
+        if (n instanceof Array);
         else n = n.toString().split('');
 
         if (n.indexOf('.') > -1) {
@@ -587,7 +587,9 @@
 
     ext.negate = function (n) {
         // add or remove the leading negation sign
-        if (!(n instanceof Array)) n = n.toString().split('');
+        if (n instanceof Array);
+        else n = n.toString().split('');
+        
         if (n[0] == '-') n.shift();
         else n.unshift('-');
         return n.join('');
@@ -599,18 +601,18 @@
             case 'zero':
                 return (Number(n) == 0);
             case 'negative':
-                return (n.toString().indexOf('-') == 0);
+                return (Number(n) < 0);
             case 'positive':
-                return (n.toString().indexOf('-') == -1 && Number(n) != 0);
+                return (Number(n) > 0);
         }
     };
 
     ext.check_num = function (n, type) {
         switch (type) {
             case 'integer':
-                return (!(Number(n).isNaN) && n.toString().indexOf('.') == -1);
+                return (!(n.isNaN) && n.toString().indexOf('.') == -1);
             case 'decimal':
-                return (!(Number(n).isNaN) && n.toString().indexOf('.') > -1);
+                return (!(n.isNaN) && n.toString().indexOf('.') > -1);
             case 'NaN':
                 return Number(n).isNaN;
             case 'infinity':
