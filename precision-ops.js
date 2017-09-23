@@ -187,7 +187,7 @@ function register(extensionName) {
     ScratchExtensions.register(extensionName, descriptor, ext)
 }
 
-let BigNumURL = 'http://zro617.github.io/src/js/bignum.js'
+let BigNumURL = 'https://zro617.github.io/src/js/bignum.js'
 ScratchExtensions.loadExternalJS(BigNumURL)
 // Wait for library to load then register
 document.querySelector('head>script[src="'+BigNumURL+'"]').onload = register.bind(window,'BigNum Operators')
